@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodShare Connect - Reduce Waste, Feed Communities</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 1rem;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #667eea;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            transition: transform 0.3s !important;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            color: white !important;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+            padding: 2rem 5%;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active-page {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Home Page */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .stat-card i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #333;
+        }
+
+        /* AI Prediction Page */
+        .prediction-container {
+            background: white;
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .prediction-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .prediction-header h2 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .ai-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+        .predictions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .prediction-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: transform 0.3s;
+        }
+
+        .prediction-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .food-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .food-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .food-quantity {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .confidence {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        /* Seller Page */
+        .seller-container {
+            background: white;
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .seller-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .giveaway-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.3s;
+        }
+
+        .giveaway-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Seller Map Picker */
+        .seller-map-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .seller-map-section h3 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .seller-map-section p {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        #seller-map {
+            height: 300px;
+            width: 100%;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+            margin-bottom: 1rem;
+        }
+
+        .map-marker-info {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .map-marker-info.active {
+            display: block;
+        }
+
+        .map-marker-info p {
+            margin: 0.3rem 0;
+            font-size: 0.95rem;
+        }
+
+        .map-marker-coords {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        /* Map Legend */
+        .map-legend {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 0.7rem;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0.5rem 0;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Families Page */
+        .families-container {
+            background: white;
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.7rem 1.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .food-items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .food-item-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .distance-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #667eea;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+        }
+
+        .claim-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 1rem;
+            width: 100%;
+            transition: transform 0.3s;
+        }
+
+        .claim-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Map Section */
+        .map-container {
+            margin-top: 3rem;
+            background: white;
+            border-radius: 30px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 20px;
+            margin-top: 1rem;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: white;
+            margin-top: 3rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 400px;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content i {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .modal-content button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .prediction-container,
+            .seller-container,
+            .families-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="showPage('home')">🍽️ FoodShare</div>
+            <div class="nav-links">
+                <a href="#" onclick="showPage('home')" class="active">Home</a>
+                <a href="#" onclick="showPage('prediction')">AI Predictions</a>
+                <a href="#" onclick="showPage('seller')">For Sellers</a>
+                <a href="#" onclick="showPage('families')">For Families</a>
+                <a href="#" onclick="showPage('map-page')">Map</a>
+                <a href="#" class="nav-btn" onclick="showPage('seller')">Give Food Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Home Page -->
+        <div id="home" class="page active-page">
+            <div class="hero">
+                <h1>Connect, Share, Reduce Waste</h1>
+                <p>Join our community of food sellers and families working together to reduce food waste and fight hunger.</p>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <i class="fas fa-utensils"></i>
+                        <div class="stat-number" id="totalMeals">0</div>
+                        <div>Meals Shared</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-store"></i>
+                        <div class="stat-number" id="totalSellers">0</div>
+                        <div>Active Sellers</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <div class="stat-number" id="totalFamilies">0</div>
+                        <div>Families Helped</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-leaf"></i>
+                        <div class="stat-number" id="foodSaved">0</div>
+                        <div>kg Food Saved</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prediction-container" style="margin-top: 2rem;">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Today's Available Food</h2>
+                <div class="predictions-grid" id="homePredictions">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Prediction Page -->
+        <div id="prediction" class="page">
+            <div class="prediction-container">
+                <div class="prediction-header">
+                    <span class="ai-badge"><i class="fas fa-robot"></i> AI-Powered Predictions</span>
+                    <h2>Tomorrow's Food Availability</h2>
+                    <p>Based on historical data and current trends</p>
+                    <button onclick="updateAIPredictions()" style="margin-top: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 50px; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-sync-alt"></i> Refresh Predictions
+                    </button>
+                </div>
+                <div class="predictions-grid" id="aiPredictions">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Seller Page -->
+        <div id="seller" class="page">
+            <div class="seller-container">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Give Away Food</h2>
+                <form class="seller-form" id="sellerForm">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" placeholder="Enter your business name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Food Type</label>
+                        <select required>
+                            <option value="">Select food type</option>
+                            <option value="vegetables">Vegetables</option>
+                            <option value="fruits">Fruits</option>
+                            <option value="bread">Bread & Bakery</option>
+                            <option value="dairy">Dairy Products</option>
+                            <option value="meals">Prepared Meals</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity (kg)</label>
+                        <input type="number" placeholder="Approximate quantity in kg" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Pickup Address</label>
+                        <input type="text" placeholder="Enter pickup address or select on map" id="address" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Available Until</label>
+                        <input type="datetime-local" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Notes</label>
+                        <textarea rows="3" placeholder="Any special instructions..."></textarea>
+                    </div>
+
+                    <!-- Map Picker Section -->
+                    <div class="seller-map-section">
+                        <h3><i class="fas fa-map-pin"></i> Mark Pickup Location</h3>
+                        <p>Click on the map below to mark your pickup location</p>
+                        <div id="seller-map"></div>
+                        <div class="map-marker-info" id="markerInfo">
+                            <p><strong>📍 Selected Location:</strong></p>
+                            <p class="map-marker-coords">Latitude: <span id="markerLat">-</span>, Longitude: <span id="markerLng">-</span></p>
+                        </div>
+                        <input type="hidden" id="pickup-lat">
+                        <input type="hidden" id="pickup-lng">
+                    </div>
+
+                    <button type="submit" class="giveaway-btn" onclick="showModal(event)" style="margin-top: 2rem;">
+                        <i class="fas fa-gift"></i> List Food for Giving
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Families Page -->
+        <div id="families" class="page">
+            <div class="families-container">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Food Available Near You</h2>
+                
+                <div class="filters">
+                    <button class="filter-btn active" onclick="filterFood('all')">All</button>
+                    <button class="filter-btn" onclick="filterFood('vegetables')">Vegetables</button>
+                    <button class="filter-btn" onclick="filterFood('fruits')">Fruits</button>
+                    <button class="filter-btn" onclick="filterFood('bread')">Bakery</button>
+                    <button class="filter-btn" onclick="filterFood('dairy')">Dairy</button>
+                </div>
+
+                <div class="food-items-grid" id="foodItems">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Page -->
+        <div id="map-page" class="page">
+            <div class="map-container">
+                <h2 style="text-align: center; margin-bottom: 1rem;">Pickup Locations Near You</h2>
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>© 2026 FoodShare Connect - Reducing waste, feeding communities. Girls Lab</p>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <i class="fas fa-check-circle"></i>
+            <h3>Success!</h3>
+            <p>Your food has been listed. Thank you for helping your community!</p>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active-page');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active-page');
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and highlight the clicked link
+            const activeLink = Array.from(document.querySelectorAll('.nav-links a')).find(
+                link => link.textContent.toLowerCase().includes(pageId) || 
+                       (pageId === 'home' && link.textContent.includes('Home'))
+            );
+            if (activeLink) activeLink.classList.add('active');
+            
+            // Initialize map if map page is shown
+            if (pageId === 'map-page') {
+                setTimeout(initMap, 100);
+            }
+            
+            // Initialize seller map if seller page is shown
+            if (pageId === 'seller') {
+                setTimeout(initSellerMap, 100);
+            }
+            
+            // Update predictions when switching to prediction page
+            if (pageId === 'prediction') {
+                updateAIPredictions();
+            }
+            
+            // Update food items when switching to families page
+            if (pageId === 'families') {
+                updateFoodItems();
+            }
+        }
+
+        // Update statistics with random values (simulating real data)
+        function updateStats() {
+            document.getElementById('totalMeals').textContent = Math.floor(Math.random() * 10000) + 5000;
+            document.getElementById('totalSellers').textContent = Math.floor(Math.random() * 200) + 100;
+            document.getElementById('totalFamilies').textContent = Math.floor(Math.random() * 1000) + 500;
+            document.getElementById('foodSaved').textContent = Math.floor(Math.random() * 5000) + 2000;
+        }
+
+        // AI Predictions (simulated AI API response with dynamic data)
+        function updateAIPredictions() {
+            const predictions = [
+                { name: 'Tomatoes', icon: '🍅', baseQty: 10, unit: 'kg' },
+                { name: 'Potatoes', icon: '🥔', baseQty: 25, unit: 'kg' },
+                { name: 'Apples', icon: '🍎', baseQty: 15, unit: 'kg' },
+                { name: 'Bread', icon: '🍞', baseQty: 30, unit: 'loaves' },
+                { name: 'Milk', icon: '🥛', baseQty: 20, unit: 'L' },
+                { name: 'Carrots', icon: '🥕', baseQty: 12, unit: 'kg' }
+            ];
+
+            // Generate dynamic predictions with random variations
+            const dynamicPredictions = predictions.map(pred => {
+                const variation = 0.7 + Math.random() * 0.6; // 70-130% variation
+                const qty = Math.round(pred.baseQty * variation);
+                const confidence = 85 + Math.random() * 13; // 85-98%
+                
+                return {
+                    ...pred,
+                    quantity: `${qty} ${pred.unit}`,
+                    confidence: Math.round(confidence)
+                };
+            });
+
+            const predictionsHtml = dynamicPredictions.map(pred => `
+                <div class="prediction-card">
+                    <div class="food-icon">${pred.icon}</div>
+                    <div class="food-name">${pred.name}</div>
+                    <div class="food-quantity">${pred.quantity}</div>
+                    <div class="confidence"><i class="fas fa-check-circle"></i> ${pred.confidence}% confidence</div>
+                </div>
+            `).join('');
+
+            document.getElementById('aiPredictions').innerHTML = predictionsHtml;
+            
+            // Update home page predictions with first 3 items
+            const homeHtml = dynamicPredictions.slice(0, 3).map(pred => `
+                <div class="prediction-card">
+                    <div class="food-icon">${pred.icon}</div>
+                    <div class="food-name">${pred.name}</div>
+                    <div class="food-quantity">${pred.quantity}</div>
+                    <div class="confidence"><i class="fas fa-check-circle"></i> ${pred.confidence}% confidence</div>
+                </div>
+            `).join('');
+            
+            const homePredictionsEl = document.getElementById('homePredictions');
+            if (homePredictionsEl) {
+                homePredictionsEl.innerHTML = homeHtml;
+            }
+        }
+
+        // Update food items for families page
+        function updateFoodItems(filter = 'all') {
+            const items = [
+                { name: 'Fresh Tomatoes', quantity: '5 kg', distance: '0.8 km', type: 'vegetables', icon: '🍅', seller: 'Green Grocers' },
+                { name: 'Organic Apples', quantity: '3 kg', distance: '1.2 km', type: 'fruits', icon: '🍎', seller: 'Fruit Market' },
+                { name: 'Fresh Bread', quantity: '10 loaves', distance: '0.3 km', type: 'bread', icon: '🍞', seller: 'City Bakery' },
+                { name: 'Milk Pack', quantity: '6 L', distance: '1.5 km', type: 'dairy', icon: '🥛', seller: 'Daily Dairy' },
+                { name: 'Potatoes', quantity: '8 kg', distance: '2.1 km', type: 'vegetables', icon: '🥔', seller: 'Farm Fresh' },
+                { name: 'Bananas', quantity: '4 kg', distance: '1.8 km', type: 'fruits', icon: '🍌', seller: 'Tropical Fruits' }
+            ];
+
+            const filteredItems = filter === 'all' ? items : items.filter(item => item.type === filter);
+            
+            const itemsHtml = filteredItems.map(item => `
+                <div class="food-item-card">
+                    <span class="distance-badge"><i class="fas fa-location-dot"></i> ${item.distance}</span>
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">${item.icon}</div>
+                    <h3>${item.name}</h3>
+                    <p style="color: #666; margin: 0.5rem 0;">${item.seller}</p>
+                    <p style="font-size: 1.3rem; font-weight: 600; color: #667eea;">${item.quantity}</p>
+                    <button class="claim-btn" onclick="showClaimModal(event)"><i class="fas fa-hand-holding-heart"></i> Claim Food</button>
+                </div>
+            `).join('');
+
+            document.getElementById('foodItems').innerHTML = itemsHtml;
+        }
+
+        // Filter food items
+        function filterFood(type) {
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateFoodItems(type);
+        }
+
+        // Leaflet Maps initialization
+        function initMap() {
+            const mapElement = document.getElementById('map');
+            if (!mapElement) return;
+            
+            // World center
+            const defaultLocation = [20, 0];
+            
+            if (window.mapInstance) {
+                window.mapInstance.remove();
+            }
+            
+            window.mapInstance = L.map('map').setView(defaultLocation, 2);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(window.mapInstance);
+
+            // Add markers for food pickup locations worldwide
+            const locations = [
+                // RUSSIA - Moscow Area
+                { coords: [55.7512, 37.6184], title: "🥬 Moscow - Green Market", type: 'vegetables' },
+                { coords: [55.7749, 37.6194], title: "🥖 Moscow - City Bakery", type: 'bread' },
+                { coords: [55.7849, 37.6094], title: "🥛 Moscow - Daily Dairy", type: 'dairy' },
+                { coords: [55.7649, 37.6294], title: "🍎 Moscow - Fruit Market", type: 'fruits' },
+                { coords: [55.7612, 37.5884], title: "🌽 Moscow - Farmer's Stand", type: 'vegetables' },
+                
+                // USA - New York
+                { coords: [40.7128, -74.0060], title: "🥬 NYC - Fresh Produce", type: 'vegetables' },
+                { coords: [40.7500, -73.9900], title: "🥖 NYC - Broadway Bakery", type: 'bread' },
+                { coords: [40.7600, -73.9700], title: "🥛 NYC - Dairy Hub", type: 'dairy' },
+                { coords: [40.7300, -74.0100], title: "🍌 NYC - Tropical Fruits", type: 'fruits' },
+                
+                // USA - Los Angeles
+                { coords: [34.0522, -118.2437], title: "🥬 LA - Farmers Market", type: 'vegetables' },
+                { coords: [34.0900, -118.2500], title: "🍞 LA - Sunset Bakery", type: 'bread' },
+                { coords: [34.1000, -118.2400], title: "🥛 LA - Dairy Store", type: 'dairy' },
+                { coords: [34.0700, -118.2600], title: "🍎 LA - Fruit Stand", type: 'fruits' },
+                
+                // USA - Chicago
+                { coords: [41.8781, -87.6298], title: "🌽 Chicago - Veggie Market", type: 'vegetables' },
+                { coords: [41.8900, -87.6200], title: "🥖 Chicago - Best Bread", type: 'bread' },
+                
+                // CANADA - Toronto
+                { coords: [43.6532, -79.3832], title: "🥬 Toronto - Fresh Market", type: 'vegetables' },
+                { coords: [43.6600, -79.3900], title: "🍞 Toronto - Bakery", type: 'bread' },
+                
+                // MEXICO - Mexico City
+                { coords: [19.4326, -99.1332], title: "🌽 Mexico City - Mercado", type: 'vegetables' },
+                { coords: [19.4500, -99.1200], title: "🥖 Mexico City - Panadería", type: 'bread' },
+                
+                // BRAZIL - São Paulo
+                { coords: [-23.5505, -46.6333], title: "🥬 São Paulo - Feira", type: 'vegetables' },
+                { coords: [-23.5600, -46.6200], title: "🍞 São Paulo - Padaria", type: 'bread' },
+                
+                // ARGENTINA - Buenos Aires
+                { coords: [-34.6037, -58.3816], title: "🌽 Buenos Aires - Mercado", type: 'vegetables' },
+                { coords: [-34.6100, -58.3700], title: "🥖 Buenos Aires - Panadería", type: 'bread' },
+                
+                // UK - London
+                { coords: [51.5074, -0.1278], title: "🥬 London - Borough Market", type: 'vegetables' },
+                { coords: [51.5200, -0.1400], title: "🍞 London - Bread Co", type: 'bread' },
+                { coords: [51.5100, -0.1100], title: "🥛 London - Dairy Shop", type: 'dairy' },
+                { coords: [51.5300, -0.1200], title: "🍎 London - Fruit Store", type: 'fruits' },
+                
+                // FRANCE - Paris
+                { coords: [48.8566, 2.3522], title: "🥬 Paris - Marché", type: 'vegetables' },
+                { coords: [48.8600, 2.3400], title: "🥖 Paris - Boulangerie", type: 'bread' },
+                { coords: [48.8700, 2.3300], title: "🧀 Paris - Fromagerie", type: 'dairy' },
+                { coords: [48.8500, 2.3600], title: "🍎 Paris - Fruits", type: 'fruits' },
+                
+                // GERMANY - Berlin
+                { coords: [52.5200, 13.4050], title: "🌽 Berlin - Biomarkt", type: 'vegetables' },
+                { coords: [52.5300, 13.4100], title: "🍞 Berlin - Bakery", type: 'bread' },
+                
+                // SPAIN - Madrid
+                { coords: [40.4168, -3.7038], title: "🥬 Madrid - Mercado", type: 'vegetables' },
+                { coords: [40.4300, -3.6900], title: "🥖 Madrid - Panadería", type: 'bread' },
+                
+                // ITALY - Rome
+                { coords: [41.9028, 12.4964], title: "🌽 Rome - Mercato", type: 'vegetables' },
+                { coords: [41.9100, 12.5100], title: "🥖 Rome - Panificio", type: 'bread' },
+                
+                // NETHERLANDS - Amsterdam
+                { coords: [52.3676, 4.9041], title: "🥬 Amsterdam - Market", type: 'vegetables' },
+                { coords: [52.3700, 4.9200], title: "🍞 Amsterdam - Bakery", type: 'bread' },
+                
+                // SWITZERLAND - Zurich
+                { coords: [47.3769, 8.5472], title: "🌽 Zurich - Markt", type: 'vegetables' },
+                { coords: [47.3900, 8.5500], title: "🥖 Zurich - Bakerei", type: 'bread' },
+                
+                // POLAND - Warsaw
+                { coords: [52.2297, 21.0122], title: "🥬 Warsaw - Targ", type: 'vegetables' },
+                { coords: [52.2400, 21.0300], title: "🍞 Warsaw - Piekarnia", type: 'bread' },
+                
+                // JAPAN - Tokyo
+                { coords: [35.6762, 139.6503], title: "🥬 Tokyo - 野菜市場", type: 'vegetables' },
+                { coords: [35.6900, 139.6600], title: "🥖 Tokyo - パン屋", type: 'bread' },
+                { coords: [35.6800, 139.6700], title: "🥛 Tokyo - 乳製品", type: 'dairy' },
+                { coords: [35.6700, 139.6400], title: "🍎 Tokyo - フルーツ", type: 'fruits' },
+                
+                // SOUTH KOREA - Seoul
+                { coords: [37.5665, 126.9780], title: "🌽 Seoul - 시장", type: 'vegetables' },
+                { coords: [37.5700, 126.9900], title: "🥖 Seoul - 베이커리", type: 'bread' },
+                
+                // CHINA - Beijing
+                { coords: [39.9042, 116.4074], title: "🥬 Beijing - 菜市场", type: 'vegetables' },
+                { coords: [39.9100, 116.4200], title: "🍞 Beijing - 面包店", type: 'bread' },
+                
+                // INDIA - Delhi
+                { coords: [28.7041, 77.1025], title: "🌽 Delhi - बाजार", type: 'vegetables' },
+                { coords: [28.7200, 77.1100], title: "🥖 Delhi - बेकरी", type: 'bread' },
+                
+                // THAILAND - Bangkok
+                { coords: [13.7563, 100.5018], title: "🥬 Bangkok - ตลาด", type: 'vegetables' },
+                { coords: [13.7600, 100.5200], title: "🥖 Bangkok - ร้านขนม", type: 'bread' },
+                
+                // SINGAPORE
+                { coords: [1.3521, 103.8198], title: "🌽 Singapore - Market", type: 'vegetables' },
+                { coords: [1.3600, 103.8300], title: "🥖 Singapore - Bakery", type: 'bread' },
+                
+                // MALAYSIA - Kuala Lumpur
+                { coords: [3.1390, 101.6869], title: "🥬 KL - Pasar", type: 'vegetables' },
+                { coords: [3.1500, 101.6900], title: "🍞 KL - Bakery", type: 'bread' },
+                
+                // PHILIPPINES - Manila
+                { coords: [14.5995, 120.9842], title: "🌽 Manila - Palengke", type: 'vegetables' },
+                { coords: [14.6100, 120.9900], title: "🥖 Manila - Panaderia", type: 'bread' },
+                
+                // AUSTRALIA - Sydney
+                { coords: [-33.8688, 151.2093], title: "🥬 Sydney - Market", type: 'vegetables' },
+                { coords: [-33.8700, 151.2200], title: "🍞 Sydney - Bakery", type: 'bread' },
+                { coords: [-33.8600, 151.2000], title: "🥛 Sydney - Dairy", type: 'dairy' },
+                { coords: [-33.8800, 151.2100], title: "🍎 Sydney - Produce", type: 'fruits' },
+                
+                // AUSTRALIA - Melbourne
+                { coords: [-37.8136, 144.9631], title: "🌽 Melbourne - Market", type: 'vegetables' },
+                { coords: [-37.8200, 144.9700], title: "🥖 Melbourne - Bakery", type: 'bread' },
+                
+                // NEW ZEALAND - Auckland
+                { coords: [-37.0082, 174.7850], title: "🥬 Auckland - Market", type: 'vegetables' },
+                { coords: [-37.0100, 174.7900], title: "🍞 Auckland - Bakery", type: 'bread' },
+                
+                // EGYPT - Cairo
+                { coords: [30.0444, 31.2357], title: "🌽 Cairo - سوق", type: 'vegetables' },
+                { coords: [30.0500, 31.2400], title: "🥖 Cairo - مخبز", type: 'bread' },
+                
+                // SOUTH AFRICA - Johannesburg
+                { coords: [-26.2041, 28.0473], title: "🥬 Johannesburg - Market", type: 'vegetables' },
+                { coords: [-26.2100, 28.0500], title: "🍞 Johannesburg - Bakery", type: 'bread' },
+                
+                // NIGERIA - Lagos
+                { coords: [6.5244, 3.3792], title: "🌽 Lagos - Market", type: 'vegetables' },
+                { coords: [6.5300, 3.3900], title: "🥖 Lagos - Bakery", type: 'bread' },
+                
+                // UNITED ARAB EMIRATES - Dubai
+                { coords: [25.2048, 55.2708], title: "🥬 Dubai - سوق", type: 'vegetables' },
+                { coords: [25.2100, 55.2800], title: "🥖 Dubai - مخبز", type: 'bread' },
+                
+                // ISRAEL - Tel Aviv
+                { coords: [32.0853, 34.7818], title: "🌽 Tel Aviv - שוק", type: 'vegetables' },
+                { coords: [32.0900, 34.7900], title: "🥖 Tel Aviv - מאפיה", type: 'bread' },
+                
+                // TURKEY - Istanbul
+                { coords: [41.0082, 28.9784], title: "🥬 Istanbul - Pazar", type: 'vegetables' },
+                { coords: [41.0100, 28.9900], title: "🍞 Istanbul - Fırın", type: 'bread' },
+            ];
+
+            // Add custom colors for different types
+            const colors = {
+                vegetables: '#06d6a0',
+                fruits: '#e63946',
+                bread: '#f4a261',
+                dairy: '#e9ecef'
+            };
+
+            locations.forEach(loc => {
+                const color = colors[loc.type] || '#667eea';
+                const html = `<div style="font-weight: bold; color: #333;">${loc.title}</div>`;
+                
+                L.circleMarker(loc.coords, {
+                    radius: 5,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 0.9,
+                    fillOpacity: 0.8
+                }).addTo(window.mapInstance)
+                    .bindPopup(html);
+            });
+
+            // Add legend to the map
+            const legend = L.control({ position: 'bottomright' });
+            legend.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'map-legend');
+                div.innerHTML = `
+                    <div class="legend-title">🍽️ Food Types</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #06d6a0;"></div>
+                        <span>Vegetables</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e63946;"></div>
+                        <span>Fruits</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f4a261;"></div>
+                        <span>Bread & Bakery</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e9ecef;"></div>
+                        <span>Dairy & Cheese</span>
+                    </div>
+                `;
+                return div;
+            };
+            legend.addTo(window.mapInstance);
+        }
+
+        // Seller Map initialization (for picking pickup location)
+        function initSellerMap() {
+            const mapElement = document.getElementById('seller-map');
+            if (!mapElement) return;
+            
+            // Default location (Moscow)
+            const defaultLocation = [55.7512, 37.6184];
+            
+            if (window.sellerMapInstance) {
+                window.sellerMapInstance.remove();
+            }
+            
+            window.sellerMapInstance = L.map('seller-map').setView(defaultLocation, 13);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(window.sellerMapInstance);
+
+            // Add click event to map for marker placement
+            window.sellerMapInstance.on('click', function(e) {
+                const lat = e.latlng.lat.toFixed(4);
+                const lng = e.latlng.lng.toFixed(4);
+                
+                // Remove previous marker if exists
+                if (window.sellerMapMarker) {
+                    window.sellerMapInstance.removeLayer(window.sellerMapMarker);
+                }
+                
+                // Add new marker
+                window.sellerMapMarker = L.marker([lat, lng])
+                    .addTo(window.sellerMapInstance)
+                    .bindPopup('📍 Pickup Location')
+                    .openPopup();
+                
+                // Update marker info display
+                document.getElementById('markerLat').textContent = lat;
+                document.getElementById('markerLng').textContent = lng;
+                document.getElementById('markerInfo').classList.add('active');
+                
+                // Store coordinates in hidden fields
+                document.getElementById('pickup-lat').value = lat;
+                document.getElementById('pickup-lng').value = lng;
+                
+                // Update address field with approximate address
+                document.getElementById('address').value = `Location: ${lat}, ${lng}`;
+            });
+        }
+
+        // Modal functions
+        function showModal(event) {
+            event.preventDefault();
+            document.getElementById('successModal').style.display = 'flex';
+            
+            // Simulate AI API call
+            simulateAICall();
+        }
+
+        function showClaimModal(event) {
+            event.preventDefault();
+            document.getElementById('successModal').querySelector('h3').textContent = 'Food Claimed!';
+            document.getElementById('successModal').querySelector('p').textContent = 'Pickup details have been sent to your phone.';
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
+            document.getElementById('successModal').querySelector('h3').textContent = 'Success!';
+            document.getElementById('successModal').querySelector('p').textContent = 'Your food has been listed. Thank you for helping your community!';
+        }
+
+        // Simulate AI API call (OpenAI-like)
+        async function callOpenAI(prompt) {
+    const apiKey = localStorage.getItem('openai_api_key');
+    if (!apiKey) {
+        console.warn('OpenAI API key not configured. Using simulated response.');
+        return { choices: [{ message: { content: 'Simulated AI response' } }] };
+    }
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+                {role: "system", content: "You are a food waste prediction AI."},
+                {role: "user", content: prompt}
+            ]
+        })
+    });
+    return await response.json();
+}
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            updateAIPredictions();
+            updateFoodItems();
+            
+            // Update stats every 30 seconds
+            setInterval(updateStats, 30000);
+            
+            // Auto-update AI predictions every 30 seconds
+            setInterval(updateAIPredictions, 30000);
+            
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('successModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+        });
+    </script>
+</body>
+</html>
